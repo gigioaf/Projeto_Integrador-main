@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const faqs = [
-  { q: "Como funciona o sistema de pontos?", a: "Cada tarefa concluída gera pontos. Os pontos podem ser acumulados e trocados por recompensas definidas pelo gestor da sua instituição." },
-  { q: "Posso ocultar minha posição no ranking?", a: "Sim! Acesse seu perfil e desative a opção 'Aparecer no ranking' nas configurações de privacidade." },
-  { q: "Como resgatar recompensas?", a: "Vá até a página de Recompensas, escolha o prêmio desejado e clique em 'Resgatar'. Os pontos serão descontados automaticamente." },
+  { q: "Como funciona o sistema de pontos?", a: "Cada tarefa aprovada gera pontos para o responsável. Esses pontos são acumulados no seu perfil e podem ser usados para resgatar recompensas." },
+  { q: "Como crio uma nova tarefa?", a: "Gestores podem criar tarefas no Kanban clicando em 'Nova Tarefa'. Ao criar, escolha um subordinado válido e defina título, descrição, pontos e prazo." },
+  { q: "Como funciona a aprovação de tarefas?", a: "Quando um funcionário marca uma tarefa como concluída, o gestor da equipe pode revisar e aprovar ou reprovar essa tarefa. Apenas tarefas aprovadas entregam pontos." },
+  { q: "Como o ranking é calculado?", a: "O ranking é ordenado por pontos acumulados, do maior para o menor. Sua posição reflete sua pontuação total em relação aos demais membros da equipe." },
+  { q: "Como resgatar recompensas?", a: "Vá até a página de Recompensas, escolha o prêmio desejado e clique em 'Resgatar'. Os pontos serão descontados automaticamente se você tiver saldo suficiente." },
 ];
 
 export default function Help() {

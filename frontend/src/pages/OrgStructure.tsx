@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getActiveUsers, getCurrentUser, getUserById, getManagerName, saveActiveUsers, type User } from "@/data/mock";
+import { getActiveUsers, getCurrentUser, getManagerName, saveActiveUsers, type User } from "@/data/mock";
 import { getApiUrl, getAuthHeaders } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -93,7 +93,13 @@ export default function OrgStructure() {
         if (Array.isArray(data)) {
           const normalized = data.map((u) => ({
             ...u,
-            gestorId: u.gestorId ?? (u as any).gestor_id ?? null,
+            id: u.id?.toString(),
+            gestorId:
+              u.gestorId != null
+                ? u.gestorId.toString()
+                : (u as any).gestor_id != null
+                ? (u as any).gestor_id.toString()
+                : null,
           }))
           setUsers(normalized)
           saveActiveUsers(normalized)

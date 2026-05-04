@@ -299,16 +299,6 @@ export default function Profile() {
             </CardContent>
           </Card>
 
-          <Card className="border-[color:var(--border)] bg-[color:var(--card)]">
-            <CardHeader>
-              <CardTitle className="font-heading">Visibilidade</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-[color:var(--muted)]">
-                As configurações de visibilidade devem ser gerenciadas na página de perfil em breve.
-              </p>
-            </CardContent>
-          </Card>
         </div>
       </div>
 

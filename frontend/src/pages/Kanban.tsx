@@ -73,7 +73,7 @@ function TaskCard({ task, isDragging, onReviewClick, onDelete }: { task: Task; i
   };
 
   const currentUser = getCurrentUser();
-  const canReview = currentUser.nivel >= 2 && task.status === "done";
+  const canReview = currentUser.nivel >= 2 && task.status === "done" && task.gestorId === currentUser.id;
   const canMarkDone = currentUser.nivel === 1 && task.assignee.id === currentUser.id && task.status === "in_progress";
   const canDelete = (currentUser.role === "gestor" || currentUser.role === "admin") && (task.status === "approved" || task.status === "rejected");
 
@@ -217,6 +217,8 @@ export default function Kanban() {
       points: task.points,
       deadline: deadlineValue,
       created_at: task.created_at,
+      gestorId: task.gestor_id?.toString() ?? null,
+      createdBy: task.created_by?.toString() ?? null,
       assignee: {
         id: task.assignee_id?.toString() ?? "",
         name: task.assignee_name ?? "",

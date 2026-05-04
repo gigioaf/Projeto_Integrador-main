@@ -2,10 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import { getActiveUsers, getCurrentUser } from "@/data/mock";
 import { toast } from "sonner";
-import { useState } from "react";
 
 const AVATAR_COLORS = [
   "bg-teal-400",
@@ -17,7 +16,6 @@ const AVATAR_COLORS = [
 ];
 
 export default function Institution() {
-  const [inviteEmail, setInviteEmail] = useState("");
   const currentUser = getCurrentUser();
 
   if (currentUser.role === "funcionario") {
@@ -30,13 +28,6 @@ export default function Institution() {
   }
 
   const membrosVisiveis = getActiveUsers().filter((m) => m.nivel !== 3);
-
-  const handleInvite = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inviteEmail) return;
-    toast.success(`✓ Convite enviado para ${inviteEmail}`);
-    setInviteEmail("");
-  };
 
   const handleSave = () => {
     toast.success("✓ Salvo");
@@ -81,29 +72,6 @@ export default function Institution() {
           </Card>
 
           {/* Card Convidar Membro */}
-          <Card className="border-[color:var(--border)] bg-[color:var(--card)] flex-1 flex flex-col">
-            <CardHeader>
-              <CardTitle className="font-heading">Convidar Membro</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 flex flex-col">
-              <form onSubmit={handleInvite} className="space-y-3">
-                <Input
-                  placeholder="email@exemplo.com"
-                  type="email"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  className="rounded-lg bg-[color:var(--surface2)] border-[color:var(--border)]"
-                />
-                <Button
-                  type="submit"
-                  className="w-full bg-gradient-primary text-white rounded-lg font-bold flex items-center justify-center gap-2"
-                >
-                  <Mail className="w-4 h-4" />
-                  Enviar Convite
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
         </div>
 
         {/* COLUNA DIREITA - Membros */}

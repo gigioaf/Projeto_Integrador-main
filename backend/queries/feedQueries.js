@@ -37,7 +37,8 @@ async function getFeedEvents(limit = 10, page = 1) {
         '[]'::json AS reactions
       FROM tasks t
       JOIN users u ON t.assignee_id = u.id
-      WHERE t.status = 'approved' AND t.deleted = FALSE
+      -- Preserva as notificações de tarefas aprovadas mesmo que a tarefa tenha sido excluída no Kanban
+      WHERE t.status = 'approved'
 
       UNION ALL
 

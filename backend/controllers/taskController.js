@@ -48,7 +48,11 @@ async function getTasks(req, res) {
     const { id: userId, nivel } = req.user
 
     const isAdmin = nivel >= 3
-    const whereClause = isAdmin ? 'TRUE' : nivel >= 2 ? 't.gestor_id = $1' : 't.assignee_id = $1'
+    const whereClause = isAdmin
+      ? 'TRUE'
+      : nivel >= 2
+        ? '(t.gestor_id = $1 OR t.assignee_id = $1)'
+        : 't.assignee_id = $1'
 
     const query = `SELECT
          t.*,
@@ -88,13 +92,8 @@ async function updateTaskStatus(req, res) {
     }
 
     // Somente o responsável pode marcar como em progresso/concluída
-    if (req.user.nivel === 1 && task.assignee_id !== req.user.id) {
+    if (task.assignee_id !== req.user.id) {
       return res.status(403).json({ error: 'Você só pode alterar o status das suas próprias tarefas' })
-    }
-
-    // Gestor pode acompanhar mas não aprovar/reprovar por aqui (uso da rota específica)
-    if (req.user.nivel >= 2 && task.gestor_id !== req.user.id) {
-      return res.status(403).json({ error: 'Você só pode alterar o status das tarefas da sua equipe' })
     }
 
     if (['approved', 'rejected'].includes(status)) {
@@ -158,8 +157,8 @@ async function reviewTask(req, res) {
       return res.status(404).json({ error: 'Tarefa não encontrada' })
     }
 
-    if (task.gestor_id !== req.user.id) {
-      return res.status(403).json({ error: 'Você só pode revisar tarefas da sua equipe' })
+    if (task.created_by !== req.user.id) {
+      return res.status(403).json({ error: 'Você só pode revisar tarefas que você atribuiu' })
     }
 
     if (task.status !== 'done') {

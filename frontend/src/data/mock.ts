@@ -27,6 +27,8 @@ export interface Task {
   points: number;
   deadline: string;
   created_at: string;
+  gestorId?: string | null;
+  createdBy?: string | null;
   isDeleting?: boolean;
   deleteCountdown?: number;
 }
@@ -168,16 +170,12 @@ export function resetActiveUsers() {
 // USER FUNCTIONS
 // =====================
 
-export function getUserById(id: string): User | undefined {
-  const currentUsers = getActiveUsers();
-  return currentUsers.find((u) => u.id === id);
-}
+export function getManagerName(gestorId?: string | number | null): string {
+  if (gestorId === null || gestorId === undefined || gestorId === "") return "Sem gestor";
 
-export function getManagerName(gestorId?: string | null): string {
-  if (!gestorId) return "Sem gestor";
-
+  const targetId = gestorId.toString();
   const currentUsers = getActiveUsers();
-  const manager = currentUsers.find((u) => u.id === gestorId);
+  const manager = currentUsers.find((u) => u.id.toString() === targetId);
   return manager ? manager.name : "Gestor não encontrado";
 }
 
@@ -219,18 +217,6 @@ export function getCurrentUser(): User {
 }
 
 // =====================
-// TASKS
-// =====================
-
-export const mockTasks: Task[] = [];
-
-// =====================
-// REWARDS
-// =====================
-
-export const mockRewards: Reward[] = [];
-
-// =====================
 // MOOD
 // =====================
 
@@ -243,9 +229,3 @@ export const moodLabels: Record<MoodType, { emoji: string; label: string }> = {
 };
 
 export const weeklyMoodData: Array<{ day: string; happy: number; neutral: number; sad: number }> = [];
-
-// =====================
-// PRODUCTIVITY
-// =====================
-
-export const monthlyProductivity: Array<{ month: string; tasks: number; points: number }> = [];
