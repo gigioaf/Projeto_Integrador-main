@@ -1,4 +1,4 @@
-/* ===== RICKET PODIUM COMPONENT ===== */
+﻿/* ===== ROCKET PODIUM COMPONENT ===== */
 
 .rp-container {
   width: 100%;
@@ -228,6 +228,22 @@
   z-index: 2;
 }
 
+/* Avatar pousado (com glow) */
+.rkt-avatar-big {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 22px;
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 20px currentColor;
+}
+
 /* Chamas do foguete */
 .rkt-flames {
   position: absolute;
@@ -254,7 +270,7 @@
   position: absolute;
   width: 24px;
   height: 38px;
-  background: radial-gradient(circle at 50% 20%, rgba(255, 160, 0, 0.8), rgba(255, 100, 0, 0.4), transparent);
+  background: radial-gradient(circle at 50% 20%, rgba(255,255,255,0.92), rgba(255,185,82,0.5), transparent);
   border-radius: 0 0 55% 55%;
   opacity: 0.55;
   animation: flk 0.13s infinite alternate-reverse;
@@ -281,6 +297,12 @@
   will-change: opacity, transform;
 }
 
+.rkt-fins {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 @keyframes popIn {
   0% {
     opacity: 0;
@@ -302,89 +324,43 @@
   animation: popIn 0.35s ease-out forwards, floatY 2.8s ease-in-out 0.35s infinite;
 }
 
-.rkt-avatar-big {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-heading);
-  font-weight: 800;
-  font-size: 22px;
-  color: white;
-  border: 3px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 0 24px rgba(0, 0, 0, 0.5);
-  position: relative;
-  z-index: 2;
-}
-
-.rkt-fins {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-}
-
-.rkt-fin-svg {
-  width: 22px;
-  height: 28px;
-}
-
-/* Animação de flutuação */
-.rkt-landed.pop {
-  animation: floatY 2.8s ease-in-out infinite;
-}
-
 @keyframes floatY {
-  0%, 100% { transform: scale(1) translateY(0); }
-  50% { transform: scale(1) translateY(-10px); }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
 
 /* ===== LISTA DE RANKING ===== */
 .rp-list {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
 }
 
 .rp-item {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
   align-items: center;
   gap: 10px;
   background: #161626;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255,255,255,0.06);
   border-radius: 9px;
   padding: 8px 13px;
-  transition: background 0.2s ease;
-}
-
-.rp-item:hover {
-  background: #1a1a2e;
 }
 
 .rp-item.me {
   border-left: 3px solid #7c5cbf;
-  background: rgba(124, 92, 191, 0.07);
+  background: rgba(124,92,191,0.07);
 }
 
 .rp-num {
-  font-family: var(--font-heading);
-  font-weight: 800;
-  font-size: 13px;
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  min-width: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
   color: #3a3a55;
-  flex-shrink: 0;
-}
-
-.rp-num svg {
-  width: 16px;
-  height: 16px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .rp-avatar {
@@ -394,91 +370,56 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: white;
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 11px;
-  color: white;
-  flex-shrink: 0;
+  font-size: 12px;
 }
 
 .rp-name-badge {
-  flex: 1;
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.rp-name {
-  font-family: var(--font-body);
-  font-weight: 600;
+.rp-name-badge .rp-name {
   font-size: 12px;
+  font-weight: 600;
   color: #f0f0f8;
 }
 
 .rp-me-badge {
-  font-family: var(--font-body);
-  font-size: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(124,92,191,0.2);
   color: #9b7de0;
-  background: rgba(124, 92, 191, 0.2);
-  border-radius: 8px;
-  padding: 1px 5px;
-  white-space: nowrap;
-  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 500;
+  width: fit-content;
 }
 
 .rp-role {
-  font-family: var(--font-body);
   font-size: 10px;
   color: #666688;
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .rp-pts-container {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 3px;
-  font-family: var(--font-body);
-  font-weight: 700;
+  gap: 6px;
   font-size: 12px;
+  font-weight: 700;
   color: #f0f0f8;
-  flex-shrink: 0;
 }
 
 .rp-pts-container svg {
   width: 12px;
   height: 12px;
-  flex-shrink: 0;
 }
 
-/* ===== ANIMAÇÕES DE VOO ===== */
-@keyframes rocketFly {
-  0% {
-    opacity: 1;
-    transform: translate(var(--sx), var(--sy)) rotate(0deg) scale(1);
-  }
-  70% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    transform: translate(var(--ex), var(--ey)) rotate(15deg) scale(0.6);
-  }
-}
-
-.rkt.flying {
-  animation: none;
-}
-
-
-/* ===== SMOKE PARTICLE ANIMATION ===== */
-@keyframes smokeOut {
-  0% {
-    opacity: 0.15;
-    transform: scale(0.3);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(3);
-  }
+.text-gray-600 {
+  color: #3a3a55;
 }

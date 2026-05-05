@@ -28,7 +28,6 @@ interface RocketDef {
   initials: string;
   slot: string;
   infoId: string;
-  formOffset: { x: number; y: number };
   delay: number;
 }
 
@@ -93,15 +92,12 @@ function smoke(x: number, y: number): void {
 // ============ GET SLOT FUNCTION ============
 
 function getSlot(colSelector: string): Point {
-  const placeholder = document.querySelector(colSelector) as HTMLElement;
-  if (!placeholder) {
-    return { x: 0, y: 0 };
-  }
-  
-  const rect = placeholder.getBoundingClientRect();
+  const col = document.querySelector(colSelector.replace('.rp-placeholder', '.rp-block')) as HTMLElement;
+  if (!col) return { x: 0, y: 0 };
+  const rect = col.getBoundingClientRect();
   return {
-    x: rect.left + rect.width / 2 - 32,
-    y: rect.top + rect.height / 2 - 50
+    x: rect.left + rect.width / 2 - 24,
+    y: rect.top - 56
   };
 }
 
@@ -127,7 +123,6 @@ const RocketPodium: React.FC<RocketPodiumProps> = ({
       initials: runner2.name.charAt(0).toUpperCase(),
       slot: '.rp-col:nth-child(1) .rp-placeholder',
       infoId: '.rp-col:nth-child(1) .rp-info',
-      formOffset: { x: -28, y: 28 },
       delay: 200
     },
     {
@@ -137,7 +132,6 @@ const RocketPodium: React.FC<RocketPodiumProps> = ({
       initials: runner1.name.charAt(0).toUpperCase(),
       slot: '.rp-col:nth-child(2) .rp-placeholder',
       infoId: '.rp-col:nth-child(2) .rp-info',
-      formOffset: { x: 0, y: 0 },
       delay: 500
     },
     {
@@ -147,7 +141,6 @@ const RocketPodium: React.FC<RocketPodiumProps> = ({
       initials: runner3.name.charAt(0).toUpperCase(),
       slot: '.rp-col:nth-child(3) .rp-placeholder',
       infoId: '.rp-col:nth-child(3) .rp-info',
-      formOffset: { x: -56, y: 56 },
       delay: 350
     }
   ];
@@ -184,13 +177,8 @@ const RocketPodium: React.FC<RocketPodiumProps> = ({
     if (!stageEl) return;
 
     const stageRect = stageEl.getBoundingClientRect();
-    const FORM_DUR = 1400; // ms - formation phase
-    const SPLIT_DUR = 700; // ms - split phase
+    const DURATION = 1800; // ms - single flight phase
     const start: Point = { x: -90, y: window.innerHeight + 60 };
-    const stageCenter: Point = {
-      x: stageRect.left + stageRect.width / 2,
-      y: stageRect.top + stageRect.height * 0.3
-    };
 
     rocketDefs.forEach((def, idx) => {
       const rktEl = rocketRefsRef.current[idx];
@@ -207,33 +195,33 @@ const RocketPodium: React.FC<RocketPodiumProps> = ({
       const bodyEl = rktEl.querySelector('.rkt-body') as HTMLDivElement;
       const flamesEl = rktEl.querySelector('.rkt-flames') as HTMLDivElement;
 
-      // ========== PHASE 1: FORMATION ==========
-      const formP0 = start;
-      const formP1: Point = {
+      // ========== SINGLE PHASE: DIRECT FLIGHT ==========
+      const tgt = getSlot(def.slot);
+      const p0 = start;
+      const p1: Point = {
         x: start.x + window.innerWidth * 0.18,
         y: start.y - window.innerHeight * 0.55
       };
-      const formP2: Point = {
-        x: stageCenter.x - 80,
-        y: stageCenter.y + 60
+      const p2: Point = {
+        x: tgt.x,
+        y: tgt.y - 40
       };
-      const formP3: Point = {
-        x: stageCenter.x + def.formOffset.x,
-        y: stageCenter.y + def.formOffset.y
-      };
+      const p3 = tgt;
 
-      let lastFormPos = formP0;
-      let formStartTime: number | null = null;
+      let startTime: number | null = null;
 
-      const formationFrame = (timestamp: number) => {
-        if (formStartTime === null) formStartTime = timestamp;
-        const elapsed = timestamp - formStartTime;
-        const rawT = Math.min(elapsed / FORM_DUR, 1);
-        const t = easeInOutQuad(rawT);
+      const flightFrame = (timestamp: number) => {
+        if (startTime === null) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+        const rawT = Math.min(elapsed / DURATION, 1);
+        const t = easeOutCubic(rawT);
 
-        const pos = cbz(formP0, formP1, formP2, formP3, t);
-        const tangent = cbzT(formP0, formP1, formP2, formP3, t);
-        const angle = (Math.atan2(tangent.y, tangent.x) * 180) / Math.PI + 90;
+        const pos = cbz(p0, p1, p2, p3, t);
+        const tangent = cbzT(p0, p1, p2, p3, t);
+        let angle = (Math.atan2(tangent.y, tangent.x) * 180) / Math.PI + 90;
+
+        // Gradually straighten the rocket
+        angle = angle * (1 - easeOutCubic(rawT));
 
         if (rktEl) {
           rktEl.style.left = `${pos.x}px`;
@@ -244,114 +232,73 @@ const RocketPodium: React.FC<RocketPodiumProps> = ({
           bodyEl.style.transform = `rotate(${angle}deg)`;
         }
 
-        // Smoke emission (28% probability between t=0.05 and t=0.92)
-        if (rawT >= 0.05 && rawT <= 0.92 && Math.random() < 0.28) {
-          smoke(pos.x + 32, pos.y + 90);
+        // Fade out flames
+        if (flamesEl) {
+          flamesEl.style.opacity = String(1 - rawT * 0.8);
         }
 
-        lastFormPos = pos;
+        // Smoke emission (18% probability)
+        if (Math.random() < 0.18) {
+          smoke(pos.x + 32, pos.y + 88);
+        }
 
         if (rawT < 1) {
-          requestAnimationFrame(formationFrame);
+          requestAnimationFrame(flightFrame);
         } else {
-          // ========== PHASE 2: SPLIT ==========
-          const tgt = getSlot(def.slot);
-          const splitP0 = lastFormPos;
-          const splitP1: Point = {
-            x: splitP0.x + (tgt.x - splitP0.x) * 0.25,
-            y: splitP0.y - 90
-          };
-          const splitP2: Point = {
-            x: tgt.x,
-            y: tgt.y - 40
-          };
-          const splitP3 = tgt;
+          // ========== LANDING ==========
+          if (rktEl) {
+            rktEl.style.left = `${tgt.x}px`;
+            rktEl.style.top = `${tgt.y}px`;
+          }
 
-          let splitStartTime: number | null = null;
+          if (bodyEl) {
+            bodyEl.style.transform = 'rotate(0deg)';
+            bodyEl.style.transition = 'opacity 0.35s ease';
+            bodyEl.style.opacity = '0';
+          }
 
-          const splitFrame = (timestamp: number) => {
-            if (splitStartTime === null) splitStartTime = timestamp;
-            const elapsed = timestamp - splitStartTime;
-            const rawT = Math.min(elapsed / SPLIT_DUR, 1);
-            const t = easeOutCubic(rawT);
+          setRockets(prev => {
+            const next = [...prev];
+            next[idx] = { ...next[idx], landed: true };
+            return next;
+          });
 
-            const pos = cbz(splitP0, splitP1, splitP2, splitP3, t);
-            const tangent = cbzT(splitP0, splitP1, splitP2, splitP3, t);
-            let angle = (Math.atan2(tangent.y, tangent.x) * 180) / Math.PI + 90;
-
-            // Gradually straighten the rocket
-            angle = angle * (1 - easeOutCubic(rawT));
-
+          // After 350ms: show landed icon and info
+          setTimeout(() => {
             if (rktEl) {
-              rktEl.style.left = `${pos.x}px`;
-              rktEl.style.top = `${pos.y}px`;
+              rktEl.style.opacity = '1';
+              rktEl.style.zIndex = '10001';
             }
 
-            if (bodyEl) {
-              bodyEl.style.transform = `rotate(${angle}deg)`;
+            const landedEl = rktEl.querySelector('.rkt-landed') as HTMLDivElement;
+            if (landedEl) {
+              landedEl.style.display = 'flex';
+              landedEl.style.opacity = '1';
+              landedEl.classList.add('pop');
             }
 
-            // Fade out flames
-            if (flamesEl) {
-              flamesEl.style.opacity = String(1 - rawT * 0.8);
+            // Convert from fixed to absolute positioning relative to stage
+            const stageEl = stageRef.current;
+            if (rktEl && stageEl) {
+              const stageRect = stageEl.getBoundingClientRect();
+              const currentLeft = parseFloat(rktEl.style.left);
+              const currentTop = parseFloat(rktEl.style.top);
+              rktEl.style.position = 'absolute';
+              rktEl.style.left = `${currentLeft - stageRect.left}px`;
+              rktEl.style.top = `${currentTop - stageRect.top}px`;
             }
 
-            // Smoke emission (18% probability)
-            if (Math.random() < 0.18) {
-              smoke(pos.x + 32, pos.y + 88);
-            }
-
-            if (rawT < 1) {
-              requestAnimationFrame(splitFrame);
-            } else {
-              // ========== LANDING ==========
-              if (rktEl) {
-                rktEl.style.left = `${tgt.x}px`;
-                rktEl.style.top = `${tgt.y}px`;
+            setTimeout(() => {
+              const infoEl = document.querySelector(def.infoId) as HTMLDivElement;
+              if (infoEl) {
+                infoEl.classList.add('show');
               }
-
-              if (bodyEl) {
-                bodyEl.style.transform = 'rotate(0deg)';
-                bodyEl.style.transition = 'opacity 0.35s ease';
-                bodyEl.style.opacity = '0';
-              }
-
-              setRockets(prev => {
-                const next = [...prev];
-                next[idx] = { ...next[idx], landed: true };
-                return next;
-              });
-
-              // After 350ms: show landed icon and info
-              setTimeout(() => {
-                if (rktEl) {
-                  rktEl.style.opacity = '1';
-                  rktEl.style.zIndex = '10001';
-                }
-
-                const landedEl = rktEl.querySelector('.rkt-landed') as HTMLDivElement;
-                if (landedEl) {
-                  landedEl.style.display = 'flex';
-                  landedEl.style.opacity = '1';
-                  landedEl.classList.add('pop');
-                  landedEl.style.animation = 'floatY 2.8s ease-in-out infinite';
-                }
-
-                setTimeout(() => {
-                  const infoEl = document.querySelector(def.infoId) as HTMLDivElement;
-                  if (infoEl) {
-                    infoEl.classList.add('show');
-                  }
-                }, 400);
-              }, 350);
-            }
-          };
-
-          requestAnimationFrame(splitFrame);
+            }, 400);
+          }, 350);
         }
       };
 
-      requestAnimationFrame(formationFrame);
+      requestAnimationFrame(flightFrame);
     });
   };
 
@@ -409,18 +356,6 @@ const RocketPodium: React.FC<RocketPodiumProps> = ({
     </svg>
   );
 
-  const FlapSVG = ({ color, direction }: { color: string; direction: 'left' | 'right' }) => {
-    const pathD = direction === 'left' 
-      ? "M0 0 Q-10 14 -6 24 L0 16Z"
-      : "M18 0 Q28 14 24 24 L18 16Z";
-    
-    return (
-      <svg viewBox={direction === 'left' ? "-10 0 28 28" : "0 0 28 28"} className="rkt-fin-svg">
-        <path d={pathD} fill={color} opacity="0.8" />
-      </svg>
-    );
-  };
-
   return (
     <div className="rp-container">
       {/* STAGE */}
@@ -460,11 +395,9 @@ const RocketPodium: React.FC<RocketPodiumProps> = ({
                 // Landed state
                 <div className={`rkt-landed ${rocket.landed ? 'pop' : ''}`}>
                   <div className="rkt-fins">
-                    <FlapSVG color={color} direction="left" />
-                    <div className="rkt-avatar-big" style={{ background: data.avColor }}>
+                    <div className="rkt-avatar-big" style={{ background: data.avColor, color: 'white' }}>
                       {data.name.charAt(0).toUpperCase()}
                     </div>
-                    <FlapSVG color={color} direction="right" />
                   </div>
                 </div>
               )}
